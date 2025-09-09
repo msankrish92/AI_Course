@@ -1,0 +1,253 @@
+Homework Assignment 1:
+
+- I am going to share to 2-3 plain selenium java code
+
+- You are going to write prompt to convert selenium to playwright typescript
+
+- Prompt
+
+	- Context:
+		- You are AI assistant to convert Selenium code to Playwright typescript 
+		- Below is the selenium code
+	- Instruction
+		- Create a typescript from the given Selenium java code
+		- Instead of Java main method  - use test method in Playwright typescript
+		- Consider the waits and Make sure you choose correct and latest working locator
+
+ - Output for Prompt above
+import { test, expect } from '@playwright/test';
+
+test('Create Lead in Leaftaps', async ({ page }) => {
+  // Step 1: Load the URL
+  await page.goto('http://leaftaps.com/opentaps/control/main');
+  await page.setViewportSize({ width: 1600, height: 900 });
+
+  // Step 2: Login
+  await page.locator('#username').fill('DemoSalesManager');
+  await page.locator('#password').fill('crmsfa');
+  await page.locator('.decorativeSubmit').click();
+
+  // Step 3: Verify the title
+  const title = await page.title();
+  console.log('Page Title after login:', title);
+  await expect(page).toHaveTitle(/Leaftaps/);
+
+  // Step 4: Navigate to CRM/SFA → Create Lead
+  await page.locator('text=CRM/SFA').click();
+  await page.locator('text=Create Lead').click();
+
+  // Step 5: Fill in the form
+  await page.locator('#createLeadForm_companyName').fill('TestLeaf');
+  await page.locator('#createLeadForm_firstName').fill('Babu');
+  await page.locator('#createLeadForm_lastName').fill('Manickam');
+
+  // Step 6: Select dropdowns
+  await page.locator('#createLeadForm_dataSourceId').selectOption({ label: 'Employee' });
+  await page.locator('#createLeadForm_marketingCampaignId').selectOption({ value: '9001' });
+
+  // Step 7: Submit form
+  await page.locator('input[name="submitButton"]').click();
+
+  // Step 8: Print the new title
+  const newTitle = await page.title();
+  console.log('Page Title after lead creation:', newTitle);
+
+  // Assert navigation happened
+  await expect(page).toHaveTitle(/View Lead/);
+});
+
+
+- Once you convert, you need to copy to this URL and run !
+https://try.playwright.tech/?l=playwright-test
+Logs
+
+Running 1 test using 1 worker
+
+Page Title after login: Leaftaps - TestLeaf Automation Platform
+Page Title after lead creation:
+✓ 1 example.spec.ts:3:5 › Create Lead in Leaftaps (14.4s)
+
+1 passed (16.3s)
+Files
+trace.zip - Open in Trace Viewer
+
+Duration of 17446 ms with Playwright version 1.53.1.
+
+Hint: Use ICE POT framework to generate !! 
+
+Note: 
+
+- The selenium code should be working code 
+
+https://github.com/TestLeafInc/TestLeafSeleniumTraining
+
+Homework Assignment 2:
+
+Integrate the prompt to your API (using postman) and confirm the response (json)
+
+Objective: You can integrate prompt + LLM API
+
+JSON payload
+{
+  "model": "openai/gpt-oss-120b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "- Context:\n  - You are an AI assistant to convert Selenium code to Playwright TypeScript.\n  - Below is the Selenium Java code:\n\n```java\npackage week2.day1;\n\nimport org.openqa.selenium.By;\nimport org.openqa.selenium.WebElement;\nimport org.openqa.selenium.chrome.ChromeDriver;\nimport org.openqa.selenium.support.ui.Select;\n\nimport io.github.bonigarcia.wdm.WebDriverManager;\n\npublic class CreateLead {\n    public static void main(String[] args) {\n        WebDriverManager.chromedriver().setup();\n        ChromeDriver driver = new ChromeDriver();\n\n        driver.get(\"http://leaftaps.com/opentaps\");\n        driver.manage().window().maximize();\n\n        driver.findElement(By.id(\"username\")).sendKeys(\"DemoSalesManager\");\n        driver.findElement(By.id(\"password\")).sendKeys(\"crmsfa\");\n        driver.findElement(By.className(\"decorativeSubmit\")).click();\n\n        String title = driver.getTitle();\n        System.out.println(title);\n\n        driver.findElement(By.linkText(\"CRM/SFA\")).click();\n        driver.findElement(By.linkText(\"Create Lead\")).click();\n\n        driver.findElement(By.id(\"createLeadForm_companyName\")).sendKeys(\"TestLeaf\");\n        driver.findElement(By.id(\"createLeadForm_firstName\")).sendKeys(\"Babu\");\n        driver.findElement(By.id(\"createLeadForm_lastName\")).sendKeys(\"Manickam\");\n\n        WebElement source = driver.findElement(By.id(\"createLeadForm_dataSourceId\"));\n        Select dd1 = new Select(source);\n        dd1.selectByVisibleText(\"Employee\");\n\n        WebElement marketing = driver.findElement(By.id(\"createLeadForm_marketingCampaignId\"));\n        Select dd2 = new Select(marketing);\n        dd2.selectByValue(\"9001\");\n\n        driver.findElement(By.name(\"submitButton\")).click();\n\n        title = driver.getTitle();\n        System.out.println(title);\n    }\n}\n```\n\n- Instruction:\n  - Create a TypeScript test using Playwright from the given Selenium Java code.\n  - Instead of the Java `main` method, use a `test` method in Playwright TypeScript.\n  - Consider the waits (`waitForSelector`, `waitForLoadState`, etc.).\n  - Make sure you choose correct and latest working locators."
+    }
+  ]
+}
+- Response
+{
+    "id": "chatcmpl-a69f095c-33b4-4994-8dbb-0175c53fde07",
+    "object": "chat.completion",
+    "created": 1757388163,
+    "model": "openai/gpt-oss-120b",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "Below is a **stand‑alone Playwright test** that reproduces the exact flow of the Selenium Java script you posted.  \nIt uses the official Playwright test runner (`@playwright/test`), async/await, modern Playwright locators and explicit waits where they are useful.\n\n```ts\n// tests/create‑lead.spec.ts\nimport { test, expect } from '@playwright/test';\n\ntest('Create a Lead – same steps as the Selenium script', async ({ page }) => {\n  // -------------------------------------------------------------\n  // 1️⃣  Open the application and maximise the window\n  // -------------------------------------------------------------\n  await page.goto('http://leaftaps.com/opentaps');\n  // Wait until the main page is fully loaded (network idle is safe for this simple site)\n  await page.waitForLoadState('networkidle');\n\n  // -------------------------------------------------------------\n  // 2️⃣  Login\n  // -------------------------------------------------------------\n  await page.fill('#username', 'DemoSalesManager');           // id = username\n  await page.fill('#password', 'crmsfa');                    // id = password\n  await page.click('.decorativeSubmit');                    // class = decorativeSubmit\n\n  // Small explicit wait for the next page to settle – useful if the title changes quickly\n  await page.waitForLoadState('domcontentloaded');\n\n  // -------------------------------------------------------------\n  // 3️⃣  Print the page title (just like System.out.println in Java)\n  // -------------------------------------------------------------\n  console.log('Title after login →', await page.title());\n\n  // -------------------------------------------------------------\n  // 4️⃣  Navigate to \"Create Lead\"\n  // -------------------------------------------------------------\n  // The link texts are unique on the page, so we can use text locators.\n  await page.click('text=CRM/SFA');\n  await page.waitForLoadState('domcontentloaded');   // wait for the SFA landing page\n\n  await page.click('text=Create Lead');\n  await page.waitForLoadState('domcontentloaded');   // wait for the Create Lead form\n\n  // -------------------------------------------------------------\n  // 5️⃣  Fill the Lead form\n  // -------------------------------------------------------------\n  await page.fill('#createLeadForm_companyName', 'TestLeaf');\n  await page.fill('#createLeadForm_firstName',   'Babu');\n  await page.fill('#createLeadForm_lastName',    'Manickam');\n\n  // ---- 5a️⃣  Select “Employee” from Data Source dropdown (visible text) ----\n  const sourceSelect = page.locator('#createLeadForm_dataSourceId');\n  await sourceSelect.waitFor();                     // ensure the <select> is present\n  await sourceSelect.selectOption({ label: 'Employee' });\n\n  // ---- 5b️⃣  Select marketing campaign by value (value = \"9001\") ----\n  const marketingSelect = page.locator('#createLeadForm_marketingCampaignId');\n  await marketingSelect.waitFor();\n  await marketingSelect.selectOption('9001');       // value attribute\n\n  // -------------------------------------------------------------\n  // 6️⃣  Submit the form\n  // -------------------------------------------------------------\n  await page.click('button[name=\"submitButton\"]');   // the <input type=\"submit\" name=\"submitButton\">\n  await page.waitForLoadState('networkidle');\n\n  // -------------------------------------------------------------\n  // 7️⃣  Print the title of the resulting page (as in the Java code)\n  // -------------------------------------------------------------\n  console.log('Title after lead creation →', await page.title());\n\n  // -------------------------------------------------------------\n  // 8️⃣  (Optional) Add a quick assertion – makes the test meaningful\n  // -------------------------------------------------------------\n  await expect(page).toHaveURL(/.*viewLead.*/);\n});\n```\n\n### Why this version is “latest‑working”\n\n| Selenium step | Playwright equivalent | Reasoning / notes |\n|---------------|----------------------|-------------------|\n| `driver.get(...)` | `await page.goto(...)` | Handles navigation + automatically waits for the initial load. |\n| `driver.manage().window().maximize();` | Playwright runs headless by default; the browser window size can be set in the global config if you need a specific viewport. |\n| `findElement(By.id(...)).sendKeys(...)` | `await page.fill('#id', ...)` | `fill` clears the field first and types the value. |\n| `findElement(By.className(...)).click()` | `await page.click('.className')` | Direct CSS selector. |\n| `driver.getTitle()` | `await page.title()` | Same information, printed to console. |\n| `findElement(By.linkText(...)).click()` | `await page.click('text=Link Text')` | Playwright’s text selector is robust and works with partial matches if needed. |\n| `Select` dropdown handling | `await locator.selectOption(...)` | Supports selecting by **label** (`visible text`) or by **value** – no extra `Select` class needed. |\n| `findElement(By.name(...)).click()` | `await page.click('button[name=\"submitButton\"]')` | Using a CSS attribute selector. |\n| Implicit waits (`WebDriverWait`) | Explicit `await page.waitForLoadState` and `await locator.waitFor()` | Playwright’s auto‑waiting already covers most cases; the explicit waits guarantee the page/element is ready before the next step. |\n\n### Running the test\n\n1. **Install Playwright (if you haven’t yet)**  \n\n   ```bash\n   npm init -y\n   npm i -D @playwright/test\n   npx playwright install\n   ```\n\n2. **Create the test file** (e.g., `tests/create-lead.spec.ts`) and paste the code above.\n\n3. **Execute**  \n\n   ```bash\n   npx playwright test\n   ```\n\nPlaywright will spin up Chromium (or the browsers you have installed), run the steps, and output the two page titles just like the original Selenium program. Feel free to adjust the viewport size or headless mode in `playwright.config.ts` according to your project needs. Happy testing!",
+                "reasoning": "We need to produce TypeScript Playwright test equivalent. Should include imports, test, maybe using test from '@playwright/test'. Use page. Use locators. Should include waits. Should handle dropdowns via selectOption. Provide comments mapping steps. Use await page.goto, page.fill, click, etc. Use expect for title maybe console.log. Provide appropriate selectors. Use page.waitForLoadState('networkidle') after navigation. Use page.waitForSelector for elements if needed.\n\nWe'll produce code snippet."
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.049171551,
+        "prompt_tokens": 531,
+        "prompt_time": 0.021561729,
+        "completion_tokens": 1357,
+        "completion_time": 2.719041677,
+        "total_tokens": 1888,
+        "total_time": 2.740603406
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_82669fd91d",
+    "x_groq": {
+        "id": "req_01k4p7yf8sf8p8ecy6zzw6jenk"
+    },
+    "service_tier": "on_demand"
+}
+
+
+Homework Assignment 3 & 4:
+
+Generate test data for credit card applications for different types of cards and conditions
+
+-Prompt
+Context:
+- You are best manual tester writing test data to test credit card application 
+Instruction:
+- [Mandatory] - Consider different types of card
+- [Critical] - Consider all the Positive/negative/Edge cases
+- Test Data should have Name, Card Type, Card Number, CCV, Issue Date, Expiration
+- Test Data should not be biased to Country or Region. It should be global
+Example:
+ - Sanjay|Visa|1234 1234 1234 1234|124|20/2023|20|2030
+Persona:
+Output:
+Tone:
+
+Prompt Output:
+John Doe|Visa|4539 1488 0343 6467|123|05/2020|05/2030
+Maria Lopez|MasterCard|5555 4444 3333 1111|456|01/2021|01/2029
+Chen Wei|American Express|3714 4963 5398 431|9876|07/2022|07/2032
+Aisha Khan|Discover|6011 0009 9013 9424|321|12/2019|12/2028
+David Smith|JCB|3566 0020 2036 0505|654|03/2023|03/2031
+Fatima Ali|Diners Club|3056 9309 0259 04|852|08/2018|08/2027
+Robert Brown|Visa|4539 1488 0343 646|123|06/2020|06/2030
+Sophia Martin|MasterCard|5555 4444 3333 111X|234|04/2021|04/2031
+Takeshi Yamamoto|American Express|3782 822463 10005|12|11/2020|11/2030
+Elena Petrova|Discover|6011 0009 9013 9424|000|01/2025|01/2023
+Omar Hassan|JCB|3566 0020 2036 0505|ABC|02/2022|02/2030
+Carlos Mendes|Diners Club|3056 9309 0259 04|999|09/2024|09/2024
+Alice White|Visa|4000 0000 0000 0002|111|01/2000|01/2001
+Rajesh Kumar|MasterCard|5100 0000 0000 0008|999|12/2023|12/2099
+Emma Johnson|American Express|3782 822463 10005|0000|07/2025|07/2026
+Lukas Schneider|Discover|6011 1111 1111 1117|999|10/2023|09/2023
+Hannah Lee|JCB|3530 1113 3330 0000|001|02/2022|02/2022
+Ahmed Ibrahim|Diners Club|3852 0000 0232 37|555|05/2024|05/2025
+Olivia Brown|Visa|4111 1111 1111 1111|321|03/2021|03/2031
+Noah Wilson|MasterCard|5105 1051 0510 5100|654|06/2022|06/2032
+Isabella Garcia|American Express|3782 822463 10005|1234|01/2020|01/2030
+Liam Miller|Discover|6011 1111 1111 1117|432|08/2019|08/2028
+Mia Davis|JCB|3530 1113 3330 0000|789|09/2022|09/2030
+Ethan Martinez|Diners Club|3056 9309 0259 04|321|12/2021|12/2029
+Sophia Gonzalez|Visa|4000 1234 5678 9010|555|05/2023|05/2033
+Jackson Lee|MasterCard|5555 5555 5555 4444|888|07/2021|07/2029
+Charlotte Kim|American Express|3787 3449 3671 000|4321|11/2022|11/2032
+Benjamin Clark|Discover|6011 0009 9013 9424|987|01/2020|01/2028
+Amelia Rodriguez|JCB|3566 0020 2036 0505|123|03/2023|03/2031
+Lucas Walker|Diners Club|3852 0000 0232 37|654|06/2022|06/2030
+Evelyn Hall|Visa|4111 1111 1111 1234|777|02/2021|02/2031
+Alexander Young|MasterCard|5100 0000 0000 0008|999|12/2020|12/2029
+Harper Allen|American Express|3714 496353 98431|0000|04/2023|04/2033
+Mason Hernandez|Discover|6011 1111 1111 1117|321|09/2019|09/2028
+Ella King|JCB|3530 1113 3330 0000|111|10/2022|10/2032
+Logan Wright|Diners Club|3056 9309 0259 04|999|07/2021|07/2030
+Aria Scott|Visa|4000 0000 0000 0010|222|05/2022|05/2032
+Jacob Green|MasterCard|5555 4444 3333 1111|123|01/2020|01/2028
+Scarlett Adams|American Express|3782 822463 10005|4321|06/2023|06/2033
+Daniel Baker|Discover|6011 0009 9013 9424|654|12/2020|12/2030
+Victoria Nelson|JCB|3566 0020 2036 0505|789|03/2021|03/2031
+Matthew Carter|Diners Club|3852 0000 0232 37|852|09/2022|09/2032
+Grace Mitchell|Visa|4111 1111 1111 1111|333|07/2021|07/2031
+Henry Perez|MasterCard|5105 1051 0510 5100|777|08/2022|08/2032
+Zoe Roberts|American Express|3782 822463 10005|0000|02/2021|02/2031
+Sebastian Turner|Discover|6011 1111 1111 1117|999|01/2020|01/2029
+Lillian Phillips|JCB|3530 1113 3330 0000|555|12/2023|12/2033
+Jack Campbell|Diners Club|3056 9309 0259 04|111|11/2021|11/2029
+
+Json payload:
+{
+  "model": "openai/gpt-oss-120b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Context:\n- You are the best manual tester writing test data to test credit card applications.\n\nInstructions:\n- [Mandatory] Consider different types of cards.\n- [Critical] Include all Positive, Negative, and Edge cases.\n- Test Data should include: Name, Card Type, Card Number, CCV, Issue Date, Expiration Date.\n- Test Data should be globally neutral (not biased to any country or region).\n\nExample:\n- Sanjay|Visa|1234 1234 1234 1234|124|20/2023|20/2030"
+    }
+  ]
+}
+
+Response:
+{
+    "id": "chatcmpl-0bdb8b80-437f-4b16-9326-d4d3d073b8fc",
+    "object": "chat.completion",
+    "created": 1757389981,
+    "model": "openai/gpt-oss-120b",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "**Credit‑Card Application Test Data**  \n*(Pipe‑separated fields – Name | Card Type | Card Number | CCV | Issue Date (MM/YYYY) | Expiration Date (MM/YYYY) | Case Type)*  \n\n| # | Test Row |\n|---|----------|\n| **Positive – valid, typical cases** |\n| 1 | Alex Taylor|Visa|4111 1111 1111 1111|123|01/2022|01/2027|Positive |\n| 2 | Morgan Lee|MasterCard|5500 0000 0000 0004|456|03/2021|03/2026|Positive |\n| 3 | Jamie Patel|American Express|3782 822463 10005|9876|07/2020|07/2025|Positive |\n| 4 | Sam Morgan|Discover|6011 0009 9013 9424|321|11/2023|11/2028|Positive |\n| 5 | Riley Kim|JCB|3530 1113 3330 0000|654|05/2022|05/2029|Positive |\n| 6 | Casey Jordan|Diners Club|3000 0000 0000 04|112|09/2021|09/2026|Positive |\n| 7 | Taylor Reed|UnionPay|6200 0000 0000 0005|777|02/2022|02/2027|Positive |\n| 8 | Jordan Blake|Maestro|6759 0000 0000 0006|999|06/2020|06/2025|Positive |\n| 9 | Avery Cameron|Visa|4005 5500 0000 0001|001|12/2023|12/2033|Positive (10‑year validity) |\n|10| Quinn Davis|MasterCard|2223 0000 0000 0009|888|04/2024|04/2029|Positive (new‑range BIN) |\n| **Negative – intentionally invalid data** |\n|11| Alex Taylor|Visa|4111 1111 1111 1110|123|01/2022|01/2027|Negative (fails Luhn) |\n|12| Morgan Lee|MasterCard|5105 1051 0510 1052|45|03/2021|03/2026|Negative (CCV only 2 digits) |\n|13| Jamie Patel|American Express|3782 822463 10006|987|07/2020|07/2025|Negative (Luhn fail) |\n|14| Sam Morgan|Discover|6011 0009 9013 942|321|11/2023|11/2028|Negative (only 15 digits) |\n|15| Riley Kim|JCB|3530 1113 3330 000|654|05/2022|05/2029|Negative (only 15 digits) |\n|16| Casey Jordan|Diners Club|3000 0000 0000 05|11|09/2021|09/2026|Negative (CCV only 2 digits) |\n|17| Taylor Reed|UnionPay|6200 0000 0000 000|777|02/2022|02/2027|Negative (only 15 digits) |\n|18| Jordan Blake|Maestro|6759 0000 0000 000|9999|06/2020|06/2025|Negative (CCV 4 digits for Maestro) |\n|19| Avery Cameron|Visa|4242 4242 4242 4242|00|12/2023|12/2028|Negative (CCV 2 digits) |\n|20| Quinn Davis|MasterCard|2221 0000 0000 0000|888|04/2024|04/2029|Negative (Luhn fail) |\n| **Edge – boundary and special‑condition cases** |\n|21| Alex Taylor|Visa|4111 1111 1111 1111|123|01/2024|01/2024|Edge (Issue = Expiration – same month) |\n|22| Morgan Lee|MasterCard|5111 1111 1111 1118|456|12/2023|12/2028|Edge (Expiration on last day of month) |\n|23| Jamie Patel|American Express|3714 999999 99999|9999|02/2024|02/2029|Edge (Leap‑year issue month Feb 2024) |\n|24| Sam Morgan|Discover|6011 1111 1111 1117|321|02/2023|02/2028|Edge (February issue/expiry, non‑leap year) |\n|25| Riley Kim|JCB|3528 0000 0000 0000|654|08/2024|08/2029|Edge (Minimum JCB BIN) |\n|26| Casey Jordan|Diners Club|3056 9900 0000 00|112|07/2024|07/2029|Edge (Maximum Diners Club length 14) |\n|27| Taylor Reed|UnionPay|6221 0000 0000 0000|777|03/2024|03/2029|Edge (UnionPay 16‑digit lower bound) |\n|28| Jordan Blake|Maestro|5018 0000 0000 0000|999|05/2024|05/2029|Edge (Maestro 16‑digit) |\n|29| Avery Cameron|Visa|4000 0000 0000 0002|001|01/2020|01/2025|Edge (Expired card – expiry before current date) |\n|30| Quinn Davis|MasterCard|5500 0000 0000 0004|888|12/2025|12/2030|Edge (Issue date in future) |\n\n---\n\n### How to Use the Data\n* **Positive rows** – feed into the system to confirm successful acceptance of a correctly formatted card.  \n* **Negative rows** – verify that validation rejects malformed numbers, wrong CCV length, insufficient digits, or Luhn‑check failures.  \n* **Edge rows** – test boundary conditions such as same issue/expiry month, leap‑year handling, minimum/maximum BIN ranges, cards that are already expired, and future issue dates.\n\nAll names are deliberately generic, and the card numbers are synthetically generated (they pass or fail Luhn checks as indicated) to keep the dataset globally neutral.",
+                "reasoning": "We need to produce test data for credit card applications, covering different card types, positive, negative, edge cases. Should be globally neutral, not region-specific. Provide fields: Name, Card Type, Card Number, CCV, Issue Date, Expiration Date.\n\nWe need to include different card types: Visa, MasterCard, American Express, Discover, JCB, Diners Club, UnionPay perhaps. Also include maybe Maestro, etc.\n\nWe need positive cases (valid data), negative cases (invalid card numbers, invalid lengths, invalid CCV, expiration before issue, expired cards, future issue dates, etc.), edge cases (boundary dates, max length numbers, zeroes, etc.)\n\nWe need test data rows, maybe a table. Provide many rows. Include note of type: positive, negative, edge.\n\nMake sure globally neutral names: use generic names (Alex, Sam, etc.) Not region specific.\n\nProvide card numbers that follow Luhn algorithm for positive cases, and invalid ones for negatives.\n\nWe need to generate valid numbers for each type. For Visa: 16 digits starting with 4, Luhn valid. MasterCard: 16 digits starting 51-55 or 2221-2720. Amex: 15 digits starting 34 or 37. Discover: 16 digits starting 6011, 65, etc. JCB: 16 digits starting 3528-3589. Diners Club: 14 digits starting 300-305, 36, 38. UnionPay: 16-19 digits starting 62.\n\nWe can produce a few rows per case.\n\nLet's craft test data list with pipe separated.\n\nInclude columns: Name|Card Type|Card Number|CCV|Issue Date|Expiration Date|Case Type (Pos/Neg/Edge)\n\nAdd issue date month/year format maybe MM/YYYY.\n\nEdge cases: Expiration exactly 5 years from issue, boundary month 01/2024, 12/2024, leap year? Issue date same as expiration? Expired card (expiration before current date). Issue date in future. CCV length variations (3 vs 4). For Amex CCV 4 digits.\n\nAlso include blank fields maybe.\n\nLet's produce about 30 rows: 10 positive, 10 negative, 10 edge.\n\nMake sure not biased.\n\nWill include a note that these are test data only.\n\nProceed."
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.053259367,
+        "prompt_tokens": 186,
+        "prompt_time": 0.006677463,
+        "completion_tokens": 1996,
+        "completion_time": 3.975181716,
+        "total_tokens": 2182,
+        "total_time": 3.9818591789999997
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_82669fd91d",
+    "x_groq": {
+        "id": "req_01k4p9ny1kfs3vfkdf31rywzw9"
+    },
+    "service_tier": "on_demand"
+}
+
+
+Notes:
+- Use ICE POT framework
+- Integrate with API to validate the response
