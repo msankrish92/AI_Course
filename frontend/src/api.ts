@@ -3,6 +3,7 @@ import { GenerateRequest, GenerateResponse } from './types'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api'
 
 export async function generateTests(request: GenerateRequest): Promise<GenerateResponse> {
+  console.log('Sending request to API:', request) // Debug log
   try {
     const response = await fetch(`${API_BASE_URL}/generate-tests`, {
       method: 'POST',

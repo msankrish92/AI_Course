@@ -1,10 +1,9 @@
 export interface GenerateRequest {
-  jiraId?: string
   storyTitle: string
   acceptanceCriteria: string
   description?: string
   additionalInfo?: string
-  checkbox?: string
+  testCaseType?: string[] // Change to array
 }
 
 export interface TestCase {

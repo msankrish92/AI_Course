@@ -4,12 +4,12 @@ import { GenerateRequest, GenerateResponse, TestCase } from './types'
 
 function App() {
   const [formData, setFormData] = useState<GenerateRequest>({
-    jiraId: '',
     storyTitle: '',
     acceptanceCriteria: '',
     description: '',
     additionalInfo: '',
-    checkbox: ''
+    testCaseType: []
+
   })
   const [results, setResults] = useState<GenerateResponse | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -28,20 +28,6 @@ function App() {
 
   const handleInputChange = (field: keyof GenerateRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const toggleCategory = (category: string) => {
-    setFormData(prev => {
-      const items = prev.checkbox ? prev.checkbox.split(',').map((s: string) => s.trim()).filter(Boolean) : []
-      const has = items.includes(category)
-      const newItems = has ? items.filter((i: string) => i !== category) : [...items, category]
-      return { ...prev, checkbox: newItems.join(',') }
-    })
-  }
-
-  const isCategorySelected = (category: string) => {
-    const items = formData.checkbox ? formData.checkbox.split(',').map((s: string) => s.trim()).filter(Boolean) : []
-    return items.includes(category)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -349,22 +335,6 @@ function App() {
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
-
-        /* added styles for category checkboxes */
-        .checkbox-group {
-          display: flex;
-          gap: 12px;
-          align-items: center;
-          margin-top: 8px;
-        }
-
-        .checkbox-label {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 500;
-          color: #2c3e50;
-        }
       `}</style>
       
       <div className="container">
@@ -374,20 +344,6 @@ function App() {
         </div>
         
         <form onSubmit={handleSubmit} className="form-container">
-          <div className="form-group">
-            <label htmlFor="jiraId" className="form-label">
-              JIRA ID
-            </label>
-            <input
-              type="text"
-              id="jiraId"
-              className="form-input"
-              value={formData.jiraId}
-              onChange={(e) => handleInputChange('jiraId', e.target.value)}
-              placeholder="e.g. PROJ-123"
-            />
-          </div>
-
           <div className="form-group">
             <label htmlFor="storyTitle" className="form-label">
               Story Title *
@@ -443,28 +399,38 @@ function App() {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Categories</label>
-            <div className="checkbox-group" role="group" aria-label="Categories">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={isCategorySelected('Positive')}
-                  onChange={() => toggleCategory('Positive')}
-                />
-                Positive
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={isCategorySelected('Negative')}
-                  onChange={() => toggleCategory('Negative')}
-                />
-                Negative
-              </label>
-            </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.testCaseType?.includes('positive')}
+                onChange={() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    testCaseType: prev.testCaseType?.includes('positive')
+                      ? prev.testCaseType.filter(t => t !== 'positive')
+                      : [...(prev.testCaseType || []), 'positive']
+                  }))
+                }}
+              />
+              Positive
+            </label>
+            <label style={{ marginLeft: '1em' }}>
+              <input
+                type="checkbox"
+                checked={formData.testCaseType?.includes('negative')}
+                onChange={() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    testCaseType: prev.testCaseType?.includes('negative')
+                      ? prev.testCaseType.filter(t => t !== 'negative')
+                      : [...(prev.testCaseType || []), 'negative']
+                  }))
+                }}
+              />
+              Negative
+            </label>
           </div>
-
           
           <button
             type="submit"

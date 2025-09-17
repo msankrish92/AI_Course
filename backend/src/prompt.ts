@@ -24,14 +24,15 @@ Guidelines:
 - Generate test case IDs like TC-001, TC-002, etc.
 - Write concise, imperative steps (e.g., "Click login button", "Enter valid email")
 - Include Positive, Negative, and Edge test cases where relevant
+- Categories: Positive, Negative, Edge, Authorization, Non-Functional
 - Steps should be actionable and specific
 - Expected results should be clear and measurable
 
 Return ONLY the JSON object, no additional text or formatting.`
 
 export function buildPrompt(request: GenerateRequest): string {
-  const { storyTitle, acceptanceCriteria, description, additionalInfo, checkbox } = request
-  
+  const { storyTitle, acceptanceCriteria, description, additionalInfo, testCaseType } = request
+
   let userPrompt = `Generate comprehensive test cases for the following user story:
 
 Story Title: ${storyTitle}
@@ -52,15 +53,12 @@ ${additionalInfo}
 `
   }
 
-  // If frontend provided categories as CSV (e.g., "Positive,Negative"), parse and include instruction
-  if (checkbox && checkbox.trim()) {
-    const categories = checkbox.split(',').map((s: string) => s.trim()).filter(Boolean)
-    if (categories.length > 0) {
-      userPrompt += `\nNOTE: The user requested test cases for the following categories: ${categories.join(', ')}.\nIf possible, generate test cases only for these categories (do not add other categories).` 
-    }
-  }
+  // Use selected testCaseType or default to all
+  const selectedTypes = testCaseType && testCaseType.length > 0
+    ? testCaseType.join(', ')
+    : 'positive scenarios, negative scenarios, edge cases'
 
-  userPrompt += `\nGenerate test cases covering positive scenarios, negative scenarios, edge cases, and any authorization or non-functional requirements as applicable. Return only the JSON response.`
+  userPrompt += `\nGenerate test cases covering only ${selectedTypes}, and any authorization or non-functional requirements as applicable. Return only the JSON response.`
 
   return userPrompt
 }

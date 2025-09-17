@@ -5,7 +5,7 @@ export const GenerateRequestSchema = z.object({
   acceptanceCriteria: z.string().min(1, 'Acceptance criteria is required'),
   description: z.string().optional(),
   additionalInfo: z.string().optional(),
-  checkbox: z.string().optional()
+  testCaseType: z.array(z.string()).optional() // Change to array
 })
 
 export const TestCaseSchema = z.object({
