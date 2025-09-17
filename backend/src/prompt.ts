@@ -1,3 +1,4 @@
+
 import { GenerateRequest } from './schemas'
 
 export const SYSTEM_PROMPT = `You are a senior QA engineer with expertise in creating comprehensive test cases from user stories. Your task is to analyze user stories and generate detailed test cases.
@@ -61,4 +62,19 @@ ${additionalInfo}
   userPrompt += `\nGenerate test cases covering only ${selectedTypes}, and any authorization or non-functional requirements as applicable. Return only the JSON response.`
 
   return userPrompt
+}
+
+export interface TestDataField {
+  fieldName: string;
+  type: string;
+  options?: { blank?: number };
+}
+
+export function buildTestDataPrompt(fields: TestDataField[]): string {
+  let prompt = `Generate a JSON array of 10 rows of test data with the following fields:\n`;
+  fields.forEach((field: TestDataField) => {
+    prompt += `- ${field.fieldName}: ${field.type}\n`;
+  });
+  prompt += `Each row should be realistic and match the type. Return only the JSON array.`;
+  return prompt;
 }

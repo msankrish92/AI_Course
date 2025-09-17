@@ -1,8 +1,32 @@
 import { useState } from 'react'
-import { generateTests } from './api'
-import { GenerateRequest, GenerateResponse, TestCase } from './types'
+import { generateTests, fetchJiraIssue, generateTestData } from './api'
+import { GenerateRequest, GenerateResponse, TestCase, TestDataField } from './types'
+
 
 function App() {
+  const [testDataResult, setTestDataResult] = useState<any>(null);
+  const [testDataLoading, setTestDataLoading] = useState(false);
+  const [testDataError, setTestDataError] = useState<string | null>(null);
+
+  const handleGenerateTestData = async () => {
+    setTestDataLoading(true);
+    setTestDataError(null);
+    try {
+      const result = await generateTestData({ fields: testDataFields });
+      setTestDataResult(result);
+    } catch (err) {
+      setTestDataError(err instanceof Error ? err.message : 'Failed to generate test data');
+    } finally {
+      setTestDataLoading(false);
+    }
+  } 
+  
+
+  const [activeTab, setActiveTab] = useState<'testCases' | 'testData'>('testCases')
+  const [testDataFields, setTestDataFields] = useState<TestDataField[]>([
+    { fieldName: '', type: '', options: { blank: 0 } }
+  ])
+
   const [formData, setFormData] = useState<GenerateRequest>({
     storyTitle: '',
     acceptanceCriteria: '',
@@ -15,6 +39,25 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [expandedTestCases, setExpandedTestCases] = useState<Set<string>>(new Set())
+  const [jiraId, setJiraId] = useState('')
+  const [jiraLoading, setJiraLoading] = useState(false)
+
+  const handleFetchJiraIssue = async () => {
+    if (!jiraId.trim()) return
+    setJiraLoading(true)
+    try {
+      const { summary, description } = await fetchJiraIssue(jiraId)
+      setFormData(prev => ({
+        ...prev,
+        storyTitle: summary,
+        description
+      }))
+    } catch (err) {
+      alert('Error fetching JIRA issue')
+    } finally {
+      setJiraLoading(false)
+    }
+  }
 
   const toggleTestCaseExpansion = (testCaseId: string) => {
     const newExpanded = new Set(expandedTestCases)
@@ -336,6 +379,98 @@ function App() {
           letter-spacing: 0.5px;
         }
       `}</style>
+
+
+      <div style={{ marginBottom: '1em' }}>
+        <button onClick={() => setActiveTab('testCases')} style={{ marginRight: '1em' }}>Test Cases</button>
+        <button onClick={() => setActiveTab('testData')}>Test Data Creation</button>
+      </div>
+
+      {activeTab === 'testData' && (
+        <div className="container">
+          <h2 style={{ marginBottom: '20px' }}>Test Data Creation</h2>
+          <div style={{ background: '#222', color: '#fff', borderRadius: '8px', padding: '24px', marginBottom: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 2fr 1fr 1fr', gap: '12px', marginBottom: '12px', fontWeight: 'bold' }}>
+              <div>Field Name</div>
+              <div>Type</div>
+              <div>Options</div>
+              <div></div>
+              <div></div>
+            </div>
+            {testDataFields.map((field, idx) => (
+              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 2fr 1fr 1fr', gap: '12px', marginBottom: '8px' }}>
+                <input value={field.fieldName} onChange={e => {
+                  const newFields = [...testDataFields]
+                  newFields[idx].fieldName = e.target.value
+                  setTestDataFields(newFields)
+                }} placeholder="Field Name" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <input value={field.type} onChange={e => {
+                  const newFields = [...testDataFields]
+                  newFields[idx].type = e.target.value
+                  setTestDataFields(newFields)
+                }} placeholder="Type" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <div>
+                  blank: <input type="number" min={0} max={100} value={field.options?.blank || 0} onChange={e => {
+                    const newFields = [...testDataFields]
+                    newFields[idx].options = { ...newFields[idx].options, blank: Number(e.target.value) }
+                    setTestDataFields(newFields)
+                  }} style={{ width: '60px', marginLeft: '4px' }} /> %
+                </div>
+                <button onClick={() => setTestDataFields(fields => [...fields, { fieldName: '', type: '', options: { blank: 0 } }])} style={{ background: '#444', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px' }}>+</button>
+                {testDataFields.length > 1 && <button onClick={() => setTestDataFields(fields => fields.filter((_, i) => i !== idx))} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px' }}>×</button>}
+              </div>
+            ))}
+          </div>
+          <button onClick={handleGenerateTestData} disabled={testDataLoading} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: '6px', padding: '12px 24px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', marginBottom: '24px' }}>
+            {testDataLoading ? 'Generating...' : 'Generate Fields Using AI'}
+          </button>
+          {testDataError && <div style={{ color: '#e74c3c', marginBottom: '16px' }}>{testDataError}</div>}
+          {/* {testDataResult && (
+            <div style={{ marginBottom: '16px', background: '#f8f8f8', color: '#333', padding: '12px', borderRadius: '6px' }}>
+              <strong>Debug Raw Response:</strong>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px' }}>{JSON.stringify(testDataResult, null, 2)}</pre>
+            </div>
+          )} */}
+          {testDataResult && testDataResult.data && Array.isArray(testDataResult.data) && (
+            <div style={{ background: '#fff', color: '#222', borderRadius: '8px', padding: '24px', marginTop: '24px' }}>
+              <h3>Generated Test Data</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '16px' }}>
+                <thead>
+                  <tr>
+                    {Object.entries(testDataResult.data[0])
+                      .map(([key]) => (
+                        <th key={key} style={{ borderBottom: '1px solid #ccc', padding: '8px', textAlign: 'left' }}>{key}</th>
+                      ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {testDataResult.data.map((row: any, idx: number) => (
+                    <tr key={idx}>
+                      {Object.entries(row)
+                        .map(([_, val], i) => (
+                          <td key={i} style={{ borderBottom: '1px solid #eee', padding: '8px' }}>{Array.isArray(val) ? val.join(', ') : String(val)}</td>
+                        ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ marginBottom: '1em' }}>
+        <input
+          type="text"
+          placeholder="Enter JIRA ID (e.g. TES-2)"
+          value={jiraId}
+          onChange={e => setJiraId(e.target.value)}
+          style={{ marginRight: '0.5em' }}
+        />
+  <button onClick={handleFetchJiraIssue} disabled={jiraLoading}>
+          {jiraLoading ? 'Fetching...' : 'Fetch'}
+        </button>
+      </div>
       
       <div className="container">
         <div className="header">
@@ -534,6 +669,8 @@ function App() {
       </div>
     </div>
   )
+  
 }
+
 
 export default App

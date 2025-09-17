@@ -21,3 +21,16 @@ export interface GenerateResponse {
   promptTokens: number
   completionTokens: number
 }
+
+export interface TestDataField {
+  fieldName: string
+  type: string
+  options?: {
+    blank?: number
+    // Add other options as needed
+  }
+}
+
+export interface TestDataRequest {
+  fields: TestDataField[]
+}

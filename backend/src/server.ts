@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { generateRouter } from './routes/generate'
 
+
 // Load environment variables from root directory
 const envPath = path.join(__dirname, '../../.env')
 console.log(`Loading .env from: ${envPath}`)
@@ -35,6 +36,7 @@ app.get('/api/health', (req, res) => {
 
 // API routes
 app.use('/api/generate-tests', generateRouter)
+app.use('/api/generate', generateRouter)
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
