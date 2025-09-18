@@ -381,7 +381,17 @@ function App() {
       `}</style>
 
 
-      <div style={{ marginBottom: '1em' }}>
+      
+
+      
+      
+      <div className="container">
+        <div className="header">
+          <h1 className="title">User Story to Tests</h1>
+          <p className="subtitle">Generate comprehensive test cases from your user stories</p>
+        </div>
+
+        <div style={{ marginBottom: '1em' }}>
         <button onClick={() => setActiveTab('testCases')} style={{ marginRight: '1em' }}>Test Cases</button>
         <button onClick={() => setActiveTab('testData')}>Test Data Creation</button>
       </div>
@@ -458,27 +468,28 @@ function App() {
           )}
         </div>
       )}
-
-      <div style={{ marginBottom: '1em' }}>
-        <input
-          type="text"
-          placeholder="Enter JIRA ID (e.g. TES-2)"
-          value={jiraId}
-          onChange={e => setJiraId(e.target.value)}
-          style={{ marginRight: '0.5em' }}
-        />
-  <button onClick={handleFetchJiraIssue} disabled={jiraLoading}>
-          {jiraLoading ? 'Fetching...' : 'Fetch'}
-        </button>
-      </div>
-      
-      <div className="container">
-        <div className="header">
-          <h1 className="title">User Story to Tests</h1>
-          <p className="subtitle">Generate comprehensive test cases from your user stories</p>
-        </div>
-        
+          {activeTab === 'testCases' && (
         <form onSubmit={handleSubmit} className="form-container">
+          <div className="form-group" style={{ marginBottom: '1em' }}>
+             <label htmlFor="storyTitle" className="form-label">
+              JIRA ID
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Enter JIRA ID (e.g. TES-2)"
+              value={jiraId}
+              onChange={e => setJiraId(e.target.value)}
+              style={{ marginRight: '0.5em', width: '200px' }}
+            />
+            <button onClick={handleFetchJiraIssue} disabled={jiraLoading}
+            className="submit-btn"
+            >
+              {jiraLoading ? 'Fetching...' : 'Fetch'}
+            </button>
+          </div>
+
+
           <div className="form-group">
             <label htmlFor="storyTitle" className="form-label">
               Story Title *
@@ -575,6 +586,7 @@ function App() {
             {isLoading ? 'Generating...' : 'Generate'}
           </button>
         </form>
+          )}
 
         {error && (
           <div className="error-banner">
@@ -666,8 +678,10 @@ function App() {
             </div>
           </div>
         )}
+        
       </div>
     </div>
+    
   )
   
 }
